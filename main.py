@@ -1,6 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
+from database import SessionLocal
+import models
 
 app = FastAPI()
 
@@ -12,27 +14,46 @@ class Item(BaseModel):
     price:int
     in_stock:bool
 
-@app.get('/')
-def index():
-    return {"message":"Hello World"}
-
-# Greeting (localhost:8000/greet/Max)
-@app.get('/greet/{name}')
-def greet_name(name:str):
-    return {"greeting":f"Hello {name}"}
+class Config:
+    orm_model = True
 
 
-# Query string greeting (localhost:8000/greet?name=Max)
-@app.get('/greet')
-def greet_optional_name(name:Optional[str] = "user"):
-    return {"message_user":f"Hello {name}"}
+db=SessionLocal()
+
+# Implement CRUD routes using database
+
+@app.get('/items', response_model=List[Item], status_code=200)
+def get_all_items():
+    items = db.query(models.Item).all()
+
+    return items
 
 
-# Item Updates (localhost:8000/item/1)
+@app.get('/item/{item_id}')
+def get_an_item(item_id:int):  # note: Pydantic uses typehinting
+    pass
+
+
+@app.post('/items', response_model=Item, status_code=201)
+def create_an_item(item:Item):
+    new_item = models.Item(
+        name=item.name,
+        price=item.price,
+        description=item.description,
+        in_stock=item.in_stock
+    )
+
+    db.add(new_item)
+    db.commit()
+
+    return new_item
+
+
 @app.put('/item/{item_id}')
-def update_item(item_id:int, item:Item):
-    return {'name':item.name,
-            'description':item.description,
-            'price':item.price,
-            'in_stock':item.in_stock
-            }
+def update_an_item(item_id:int):
+    pass
+
+
+@app.delete('/item/{item_id}')
+def delete_an_item(item_id:int):
+    pass
