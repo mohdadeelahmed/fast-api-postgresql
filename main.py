@@ -19,6 +19,9 @@ def get_all_items():
 def get_an_item(item_id:int):  # note: Pydantic uses typehinting
     item = db.query(models.Item).filter(models.Item.id==item_id).first()
 
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+
     return item
 
 
@@ -52,6 +55,9 @@ def update_an_item(item_id:int, item:schemas.Item):
     updated_item.price = item.price
     updated_item.description = item.description
     updated_item.in_stock = item.in_stock
+
+    if updated_item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
 
     db.commit()
 
