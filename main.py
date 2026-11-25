@@ -1,43 +1,29 @@
-from fastapi import FastAPI, status, HTTPException
-from pydantic import BaseModel
-from typing import Optional, List
+from fastapi import FastAPI, HTTPException
+from typing import List
 from database import SessionLocal
-import models
+import models, schemas
 
 app = FastAPI()
-
-# Schema
-class Item(BaseModel):
-    id:int
-    name:str
-    description:str
-    price:int
-    in_stock:bool
-
-class Config:
-    orm_model = True
-
-
 db=SessionLocal()
 
-# Implement CRUD routes using database
+# Implement CRUD routes
 
-@app.get('/items', response_model=List[Item], status_code=200)
+@app.get('/items', response_model=List[schemas.Item], status_code=200)
 def get_all_items():
     items = db.query(models.Item).all()
 
     return items
 
 
-@app.get('/item/{item_id}', response_model=Item, status_code=200)
+@app.get('/item/{item_id}', response_model=schemas.Item, status_code=200)
 def get_an_item(item_id:int):  # note: Pydantic uses typehinting
     item = db.query(models.Item).filter(models.Item.id==item_id).first()
 
     return item
 
 
-@app.post('/items', response_model=Item, status_code=201)
-def create_an_item(item:Item):
+@app.post('/items', response_model=schemas.Item, status_code=201)
+def create_an_item(item:schemas.Item):
 
     # Duplicate items check
     db_item = db.query(models.Item).filter(models.Item.name==item.name).first()
@@ -58,8 +44,8 @@ def create_an_item(item:Item):
     return new_item
 
 
-@app.put('/item/{item_id}', response_model=Item, status_code=200)
-def update_an_item(item_id:int, item:Item):
+@app.put('/item/{item_id}', response_model=schemas.Item, status_code=200)
+def update_an_item(item_id:int, item:schemas.Item):
     updated_item = db.query(models.Item).filter(models.Item.id==item_id).first()
 
     updated_item.name = item.name

@@ -9,7 +9,6 @@ class Item(Base):
     price = Column(Integer, nullable=False)
     in_stock = Column(Boolean, default=False)
 
-
-# Represent table data as string
-def __repr__(self):
-    return f"<Item name={self.name} price={self.price}>"
+    # Represent table data as string
+    def __repr__(self):
+        return f"<Item name={self.name} price={self.price}>"
